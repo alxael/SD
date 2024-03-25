@@ -31,6 +31,7 @@
 *.out
 *.app
 
-# Raw CSVs
-src/projects/1/tests/*
-src/projects/1/reports/*
+# Sort project
+src/projects/sort/tests/*
+src/projects/sort/reports/*
+src/projects/sort/build/*

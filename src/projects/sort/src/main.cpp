@@ -10,8 +10,10 @@ using namespace tester;
 int main() {
     int numThreads = thread::hardware_concurrency();
     int numTests;
-    ifstream in("../configs/testingSchema.csv");
 
+    ifstream in("../configs/testingSchema.csv");
+    cout << "Available number of threads: " << numThreads << endl;
+    
     vector<thread> threads;
     for (int index = 1; index <= numThreads && !in.eof(); index++) {
         string dataType, valueCount, testCount, distribution, argumentOne, argumentTwo;
@@ -34,9 +36,9 @@ int main() {
         argumentTwoValue = stod(argumentTwo);
 
         string testsPath = "../tests/" + to_string(index);
-        try {
-            system(("mkdir " + testsPath).c_str());
-        } catch (const exception &exception) {}
+        // try {
+        //     system(("mkdir " + testsPath).c_str());
+        // } catch (const exception &exception) {}
 
         if (dataType == "int") {
             Tester<int> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
