@@ -10,6 +10,7 @@
 
 using namespace std;
 using namespace ds;
+using namespace chrono;
 
 namespace tester {
     enum DistributionType {
@@ -19,7 +20,7 @@ namespace tester {
     template<typename ValueType>
     class Tester {
     private:
-        vector<ValueType> array;
+        Vector<ValueType> array;
         int batchID;
         int valueCount;
         int testCount;
@@ -39,7 +40,7 @@ namespace tester {
         string reportDirectoryPath;
 
         void generateArrayValues() {
-            array.clear();
+            auto generatedArray = new ValueType[valueCount];
 
             random_device randomDevice;
             mt19937 mersenneTwister(randomDevice());
@@ -48,25 +49,27 @@ namespace tester {
                     if (is_same_v<ValueType, int>) {
                         uniform_int_distribution<int> intDistribution(distributionArgumentOne, distributionArgumentTwo);
                         for (int index = 0; index < valueCount; index++)
-                            array.emplace_back(intDistribution(mersenneTwister));
+                            generatedArray[index] = intDistribution(mersenneTwister);
                     } else if (is_same_v<ValueType, double>) {
                         uniform_real_distribution<double> realDistribution(distributionArgumentOne,
                                                                            distributionArgumentTwo);
                         for (int index = 0; index < valueCount; index++)
-                            array.emplace_back(realDistribution(mersenneTwister));
+                            generatedArray[index] = realDistribution(mersenneTwister);
                     }
                     break;
                 }
                 case normal: {
                     normal_distribution<double> normalDistribution(distributionArgumentOne, distributionArgumentTwo);
                     for (int index = 0; index < valueCount; index++)
-                        array.emplace_back(normalDistribution(mersenneTwister));
+                        generatedArray[index] = normalDistribution(mersenneTwister);
                     break;
                 }
                 default:
                     throw (runtime_error("Invalid distribution type!"));
             }
 
+            array.update(valueCount, generatedArray);
+            delete[] generatedArray;
         }
 
         void generateTestFile(const string &filePath) {
@@ -120,21 +123,107 @@ namespace tester {
                 batchInfo << "uniform, ";
             batchInfo << distributionArgumentOne << ", " << distributionArgumentTwo << ", tests/" << batchID << endl;
 
-            batchData << "Test number, STL sort" << endl;
+            long long durations[10] = {};
+            batchData
+                    << "Test number, STL sort, Radix sort, Merge sort, Shell sort, Quick sort, Heap sort, Insertion sort, Intro sort"
+                    << endl;
             for (int index = 0; index < testCount; index++) {
-                generateArrayValues();
                 /// Should only be included if tests should be shown
-                /// generateTestFile(testDirectoryPath + "/" + to_string(index + 1));
+                // generateTestFile(testDirectoryPath + "/" + to_string(index + 1));
+                long long auxDurations[10] = {}, auxDuration;
+                generateArrayValues();
+                Vector<ValueType> auxArray;
+                time_point<steady_clock> startTime, endTime;
+                nanoseconds duration;
 
-                /// sorting is done here
-                auto startTime = std::chrono::high_resolution_clock::now();
-                sort(array.begin(), array.end());
-                auto endTime = std::chrono::high_resolution_clock::now();
-                auto duration = duration_cast<std::chrono::nanoseconds>(endTime - startTime);
+                /// 1. STL sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.stlSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[1] = duration.count();
 
-                long long nanosecondsDuration = duration.count();
-                batchData << index + 1 << "," << 1.0 * nanosecondsDuration / 1e9 << endl;
+                /// 2. Radix sort
+                // if(is_same_v<int, ValueType>) {
+                if (false) {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.radixSort();
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[2] = duration.count();
+                } else
+                    batchData << ",";
+
+                /// 3. Merge sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.mergeSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[3] = duration.count();
+
+                /// 4. Shell sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.shellSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[4] = duration.count();
+
+                /// 5. Quick sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.quickSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[5] = duration.count();
+
+                /// 6. Heap sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.heapSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[6] = duration.count();
+
+                /// 7. Insertion sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.insertionSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[7] = duration.count();
+
+                /// 8. Intro sort
+                auxArray = array;
+                startTime = high_resolution_clock::now();
+                auxArray.introSort();
+                endTime = high_resolution_clock::now();
+                duration = duration_cast<nanoseconds>(endTime - startTime);
+                auxDurations[8] = duration.count();
+
+                batchData << index + 1 << ",";
+                for (int durationIndex = 1; durationIndex <= 8; durationIndex++) {
+                    durations[durationIndex] += auxDurations[durationIndex];
+                    durations[0] += auxDurations[durationIndex];
+                    batchData << 1.0 * auxDurations[durationIndex] / 1e6;
+                    if (durationIndex != 8)
+                        batchData << ",";
+                }
+                batchData << endl;
             }
+            batchInfo
+                    << "Total time, STL sort average, Radix sort average, Merge sort average, Shell sort average, Quick sort average, Heap sort average, Insertion sort average, Intro sort average"
+                    << endl;
+            batchInfo << (1.0 * durations[0] / 1e6) << ",";
+            for (int index = 1; index <= 8; index++) {
+                batchInfo << (1.0 * durations[index] / 1e6) / testCount;
+                if(index != 8)
+                    batchInfo << ",";
+            }
+            batchInfo << endl;
         }
     };
 }

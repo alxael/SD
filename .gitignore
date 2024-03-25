@@ -31,6 +31,9 @@
 *.out
 *.app
 
+# Miscellaneous
+*/.DS_Store
+
 # Sort project
 src/projects/sort/tests/*
 src/projects/sort/reports/*

@@ -8,7 +8,7 @@ using namespace ds;
 using namespace tester;
 
 int main() {
-    int numThreads = thread::hardware_concurrency();
+    unsigned int numThreads = thread::hardware_concurrency();
     int numTests;
 
     ifstream in("../configs/testingSchema.csv");
@@ -16,24 +16,32 @@ int main() {
     
     vector<thread> threads;
     for (int index = 1; index <= numThreads && !in.eof(); index++) {
-        string dataType, valueCount, testCount, distribution, argumentOne, argumentTwo;
-        DistributionType distributionType;
-        int testCountInt, valueCountInt;
-        double argumentOneValue, argumentTwoValue;
+        string dataType;
         getline(in, dataType, ',');
+
+        string valueCount;
         getline(in, valueCount, ',');
-        valueCountInt = stoi(valueCount);
+        int valueCountInt = stoi(valueCount);
+
+        string testCount;
         getline(in, testCount, ',');
-        testCountInt = stoi(testCount);
+        int testCountInt = stoi(testCount);
+
+        string distribution;
         getline(in, distribution, ',');
+        DistributionType distributionType;
         if (distribution == "normal")
             distributionType = normal;
         else if (distribution == "uniform")
             distributionType = uniform;
+
+        string argumentOne;
         getline(in, argumentOne, ',');
-        argumentOneValue = stod(argumentOne);
+        double argumentOneValue = stod(argumentOne);
+
+        string argumentTwo;
         getline(in, argumentTwo);
-        argumentTwoValue = stod(argumentTwo);
+        double argumentTwoValue = stod(argumentTwo);
 
         string testsPath = "../tests/" + to_string(index);
         // try {
