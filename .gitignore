@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Raw CSVs
+src/projects/1/tests/*
+src/projects/1/reports/*
