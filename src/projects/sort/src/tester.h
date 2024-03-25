@@ -124,16 +124,20 @@ namespace tester {
             batchInfo << distributionArgumentOne << ", " << distributionArgumentTwo << ", tests/" << batchID << endl;
 
             long long durations[10] = {};
+            int numSortingAlgorithms = 7;
             batchData
-                    << "Test number, STL sort, Radix sort, Merge sort, Shell sort, Quick sort, Heap sort, Insertion sort, Intro sort"
+                    << "Test number, STL sort, Radix sort, Merge sort, Shell sort, Quick sort, Heap sort, Intro sort"
                     << endl;
             for (int index = 0; index < testCount; index++) {
+                /// Progress evaluation
+                cout << "Batch " << batchID << " - Test " << index + 1 << endl;
+
                 /// Should only be included if tests should be shown
                 // generateTestFile(testDirectoryPath + "/" + to_string(index + 1));
                 long long auxDurations[10] = {}, auxDuration;
                 generateArrayValues();
                 Vector<ValueType> auxArray;
-                time_point<steady_clock> startTime, endTime;
+                time_point<high_resolution_clock> startTime, endTime;
                 nanoseconds duration;
 
                 /// 1. STL sort
@@ -153,8 +157,7 @@ namespace tester {
                     endTime = high_resolution_clock::now();
                     duration = duration_cast<nanoseconds>(endTime - startTime);
                     auxDurations[2] = duration.count();
-                } else
-                    batchData << ",";
+                }
 
                 /// 3. Merge sort
                 auxArray = array;
@@ -188,13 +191,13 @@ namespace tester {
                 duration = duration_cast<nanoseconds>(endTime - startTime);
                 auxDurations[6] = duration.count();
 
-                /// 7. Insertion sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.insertionSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[7] = duration.count();
+//                /// 7. Insertion sort
+//                auxArray = array;
+//                startTime = high_resolution_clock::now();
+//                auxArray.insertionSort();
+//                endTime = high_resolution_clock::now();
+//                duration = duration_cast<nanoseconds>(endTime - startTime);
+//                auxDurations[7] = duration.count();
 
                 /// 8. Intro sort
                 auxArray = array;
@@ -202,25 +205,25 @@ namespace tester {
                 auxArray.introSort();
                 endTime = high_resolution_clock::now();
                 duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[8] = duration.count();
+                auxDurations[7] = duration.count();
 
                 batchData << index + 1 << ",";
-                for (int durationIndex = 1; durationIndex <= 8; durationIndex++) {
+                for (int durationIndex = 1; durationIndex <= numSortingAlgorithms; durationIndex++) {
                     durations[durationIndex] += auxDurations[durationIndex];
                     durations[0] += auxDurations[durationIndex];
                     batchData << 1.0 * auxDurations[durationIndex] / 1e6;
-                    if (durationIndex != 8)
+                    if (durationIndex != numSortingAlgorithms)
                         batchData << ",";
                 }
                 batchData << endl;
             }
             batchInfo
-                    << "Total time, STL sort average, Radix sort average, Merge sort average, Shell sort average, Quick sort average, Heap sort average, Insertion sort average, Intro sort average"
+                    << "Total time, STL sort average, Radix sort average, Merge sort average, Shell sort average, Quick sort average, Heap sort average, Intro sort average"
                     << endl;
             batchInfo << (1.0 * durations[0] / 1e6) << ",";
-            for (int index = 1; index <= 8; index++) {
+            for (int index = 1; index <= numSortingAlgorithms; index++) {
                 batchInfo << (1.0 * durations[index] / 1e6) / testCount;
-                if(index != 8)
+                if (index != numSortingAlgorithms)
                     batchInfo << ",";
             }
             batchInfo << endl;

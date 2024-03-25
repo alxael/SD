@@ -9,13 +9,27 @@ using namespace tester;
 
 int main() {
     unsigned int numThreads = thread::hardware_concurrency();
-    int numTests;
+
+    try {
+        system("mkdir ../reports");
+    } catch (const exception &exception) {
+        cout << exception.what() << endl;
+    }
+    try {
+        system("mkdir ../tests");
+    } catch (const exception &exception) {
+        cout << exception.what() << endl;
+    }
 
     ifstream in("../configs/testingSchema.csv");
     cout << "Available number of threads: " << numThreads << endl;
-    
+    cout << "Begin?" << endl;
+
+    string beg;
+    getline(cin, beg);
+
     vector<thread> threads;
-    for (int index = 1; index <= numThreads && !in.eof(); index++) {
+    for (int index = 1; !in.eof(); index++) {
         string dataType;
         getline(in, dataType, ',');
 
@@ -44,9 +58,11 @@ int main() {
         double argumentTwoValue = stod(argumentTwo);
 
         string testsPath = "../tests/" + to_string(index);
-        // try {
-        //     system(("mkdir " + testsPath).c_str());
-        // } catch (const exception &exception) {}
+//        try {
+//            system(("mkdir " + testsPath).c_str());
+//        } catch (const exception &exception) {
+//            cout << exception.what() << endl;
+//        }
 
         if (dataType == "int") {
             Tester<int> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
