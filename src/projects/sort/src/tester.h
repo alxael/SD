@@ -149,7 +149,7 @@ namespace tester {
                 auxDurations[1] = duration.count();
 
                 /// 2. Radix sort
-                // if(is_same_v<int, ValueType>) {
+//                 if(is_same_v<int, ValueType>) {
                 if (false) {
                     auxArray = array;
                     startTime = high_resolution_clock::now();
