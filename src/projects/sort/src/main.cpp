@@ -66,8 +66,8 @@ int main() {
 
         if (dataType == "int") {
             Tester<long long> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
-                                    argumentTwoValue,
-                                    testsPath, "../reports");
+                                          argumentTwoValue,
+                                          testsPath, "../reports");
             threads.emplace_back(&Tester<long long>::generateTests, batchTester);
         } else if (dataType == "double") {
             Tester<double> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,

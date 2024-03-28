@@ -36,3 +36,5 @@
 
 # Sort project
 cmake-build-debug
+tests
+reports

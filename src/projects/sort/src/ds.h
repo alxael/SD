@@ -104,7 +104,6 @@ namespace ds {
         }
 
         void heapSortUtil(long long st, long long dr) {
-            long long N = dr - st + 1;
             priority_queue<T, vector<T>, greater<T>> X;
             for (long long i = st; i <= dr; i++) {
                 X.push(v[i]);
@@ -117,15 +116,53 @@ namespace ds {
         }
 
         void quickSortUtil(long long st, long long dr) {
-            if (st >= dr) {
+            if (st >= dr)
                 return;
-            }
 
             long long pi = partition(st, dr);
 
             quickSortUtil(st, pi - 1);
             quickSortUtil(pi + 1, dr);
         }
+
+        void quickSortDoublePivotUtil(long long st, long long dr) {
+            if (st >= dr)
+                return;
+
+            if (v[st] > v[dr])
+                swap(v[st], v[dr]);
+
+            T pst = v[st], pdr = v[dr];
+            long long j = st + 1, k = st + 1, g = dr - 1;
+            while (k <= g) {
+                if (v[k] < pst) {
+                    swap(v[k], v[j]);
+                    j++;
+                } else if (v[k] >= pdr) {
+                    while (v[g] > pdr && k < g)
+                        g--;
+                    swap(v[k], v[g]);
+                    g--;
+                    if (v[k] < pst) {
+                        swap(v[k], v[j]);
+                        j++;
+                    }
+                }
+                k++;
+            }
+            j--;
+            g++;
+
+            swap(v[st], v[j]);
+            swap(v[dr], v[g]);
+
+            pst = j;
+            pdr = g;
+            quickSortDoublePivotUtil(st, pst - 1);
+            quickSortDoublePivotUtil(pst + 1, pdr - 1);
+            quickSortDoublePivotUtil(pdr + 1, dr);
+        }
+
 
         void insertionSortUtil(long long st, long long dr) {
             for (long long i = st; i <= dr; i++) {
@@ -174,7 +211,7 @@ namespace ds {
     public:
         Vector() { dim = 0; }
 
-        Vector(long long x) {
+        explicit Vector(long long x) {
             freeArray();
             dim = x;
             v = new T[dim + 1];
@@ -251,6 +288,13 @@ namespace ds {
             return mx;
         }
 
+        bool isSorted() const {
+            for (long long i = 1; i < dim; i++)
+                if (v[i] > v[i + 1])
+                    return false;
+            return true;
+        }
+
         T getItemAtIndex(unsigned long long index) {
             if (index >= dim)
                 throw (runtime_error("Index is larger than array size."));
@@ -297,6 +341,10 @@ namespace ds {
 
         void quickSort() {
             quickSortUtil(1, dim);
+        }
+
+        void quickSortDoublePivot() {
+            quickSortDoublePivotUtil(1, dim);
         }
 
         void insertionSort() {

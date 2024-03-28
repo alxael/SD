@@ -47,7 +47,8 @@ namespace tester {
             switch (distribution) {
                 case uniform: {
                     if (is_same_v<ValueType, long long>) {
-                        uniform_int_distribution<long long> intDistribution(distributionArgumentOne, distributionArgumentTwo);
+                        uniform_int_distribution<long long> intDistribution(distributionArgumentOne,
+                                                                            distributionArgumentTwo);
                         for (long long index = 0; index < valueCount; index++)
                             generatedArray[index] = intDistribution(mersenneTwister);
                     } else if (is_same_v<ValueType, double>) {
@@ -119,10 +120,10 @@ namespace tester {
                 batchInfo << "uniform, ";
             batchInfo << distributionArgumentOne << ", " << distributionArgumentTwo << ", tests/" << batchID << endl;
 
-            const long long numSortingAlgorithms = 8;
+            const long long numSortingAlgorithms = 9;
             long long durations[numSortingAlgorithms + 1] = {};
             batchData
-                    << "Test number, STL sort, Radix sort base 10, Radix sort base 1<<16, Merge sort, Shell sort, Quick sort, Heap sort, Intro sort"
+                    << "Test number, STL sort, Radix sort base 10, Radix sort base 1<<16, Merge sort, Shell sort, Quick sort, Quick sort double pivot, Heap sort, Intro sort"
                     << endl;
             for (long long index = 0; index < testCount; index++) {
                 /// Progress evaluation
@@ -139,23 +140,32 @@ namespace tester {
                 nanoseconds duration;
 
                 /// 1. STL sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.stlSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[1] = duration.count();
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.stlSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[1] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[1] = 0;
+                }
 
                 /// 2. Radix sort, base 10
                 try {
                     auxArray = array;
                     startTime = high_resolution_clock::now();
                     auxArray.radixSort(10);
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
                     endTime = high_resolution_clock::now();
                     duration = duration_cast<nanoseconds>(endTime - startTime);
                     auxDurations[2] = duration.count();
                 } catch (const exception &exception) {
-                    cout << exception.what() << endl;
+//                    cout << exception.what() << endl;
                     auxDurations[2] = 0;
                 }
 
@@ -164,54 +174,105 @@ namespace tester {
                     auxArray = array;
                     startTime = high_resolution_clock::now();
                     auxArray.radixSort((1 << 16));
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
                     endTime = high_resolution_clock::now();
                     duration = duration_cast<nanoseconds>(endTime - startTime);
                     auxDurations[3] = duration.count();
                 } catch (const exception &exception) {
-                    cout << exception.what() << endl;
+//                    cout << exception.what() << endl;
                     auxDurations[3] = 0;
                 }
 
                 /// 4. Merge sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.mergeSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[4] = duration.count();
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.mergeSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[4] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[4] = 0;
+                }
 
                 /// 5. Shell sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.shellSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[5] = duration.count();
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.shellSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[5] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[5] = 0;
+                }
 
                 /// 6. Quick sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.quickSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[6] = duration.count();
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.quickSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[6] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[6] = 0;
+                }
 
-                /// 7. Heap sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.heapSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[7] = duration.count();
+                /// 7. Quick sort double pivot
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.quickSortDoublePivot();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[7] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[7] = 0;
+                }
 
-                /// 8. Intro sort
-                auxArray = array;
-                startTime = high_resolution_clock::now();
-                auxArray.introSort();
-                endTime = high_resolution_clock::now();
-                duration = duration_cast<nanoseconds>(endTime - startTime);
-                auxDurations[8] = duration.count();
+                /// 8. Heap sort
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.heapSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[8] = duration.count();
+                } catch (const exception &exception) {
+//                    cout << exception.what() << endl;
+                    auxDurations[8] = 0;
+                }
 
+                /// 9. Intro sort
+                try {
+                    auxArray = array;
+                    startTime = high_resolution_clock::now();
+                    auxArray.introSort();
+                    if (!auxArray.isSorted())
+                        throw (runtime_error("Array is not sorted!!!"));
+                    endTime = high_resolution_clock::now();
+                    duration = duration_cast<nanoseconds>(endTime - startTime);
+                    auxDurations[9] = duration.count();
+                } catch (const exception &exception) {
+                    cout << exception.what() << endl;
+                    auxDurations[9] = 0;
+                }
 
                 batchData << index + 1 << ",";
                 for (long long durationIndex = 1; durationIndex <= numSortingAlgorithms; durationIndex++) {
@@ -224,7 +285,7 @@ namespace tester {
                 batchData << endl;
             }
             batchInfo
-                    << "Total time, STL sort, Radix sort base 10 average, Radix sort base 1<<16 average, Merge sort average, Shell sort average, Quick sort average, Heap sort average, Intro sort average"
+                    << "Total time, STL sort, Radix sort base 10 average, Radix sort base 1<<16 average, Merge sort average, Shell sort average, Quick sort average, Quick sort double pivot averag, Heap sort average, Intro sort average"
                     << endl;
             batchInfo << (1.0 * durations[0] / 1e6) << ",";
             for (long long index = 1; index <= numSortingAlgorithms; index++) {
