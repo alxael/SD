@@ -8,7 +8,7 @@ using namespace ds;
 using namespace tester;
 
 int main() {
-    unsigned int numThreads = thread::hardware_concurrency();
+    unsigned long long numThreads = thread::hardware_concurrency();
 
     try {
         system("mkdir ../reports");
@@ -21,7 +21,7 @@ int main() {
         cout << exception.what() << endl;
     }
 
-    ifstream in("../configs/finalSchema.csv");
+    ifstream in("../configs/testingSchema.csv");
     cout << "Available number of threads: " << numThreads << endl;
     cout << "Begin?" << endl;
 
@@ -29,17 +29,17 @@ int main() {
     getline(cin, beg);
 
     vector<thread> threads;
-    for (int index = 1; !in.eof(); index++) {
+    for (long long index = 1; !in.eof(); index++) {
         string dataType;
         getline(in, dataType, ',');
 
         string valueCount;
         getline(in, valueCount, ',');
-        int valueCountInt = stoi(valueCount);
+        long long valueCountInt = stoi(valueCount);
 
         string testCount;
         getline(in, testCount, ',');
-        int testCountInt = stoi(testCount);
+        long long testCountInt = stoi(testCount);
 
         string distribution;
         getline(in, distribution, ',');
@@ -65,10 +65,10 @@ int main() {
 //        }
 
         if (dataType == "int") {
-            Tester<int> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
+            Tester<long long> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
                                     argumentTwoValue,
                                     testsPath, "../reports");
-            threads.emplace_back(&Tester<int>::generateTests, batchTester);
+            threads.emplace_back(&Tester<long long>::generateTests, batchTester);
         } else if (dataType == "double") {
             Tester<double> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
                                        argumentTwoValue,

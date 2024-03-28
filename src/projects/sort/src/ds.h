@@ -11,11 +11,11 @@ namespace ds {
     template<typename T>
     class Vector {
     private:
-        int dim;
+        long long dim;
         T *v;
 
         void freeArray() {
-            if(dim)
+            if (dim)
                 delete v;
         }
 
@@ -23,23 +23,23 @@ namespace ds {
         ///v1: subvectorul de la pozitia st la mij al vectorului tata
         ///v2: subvectorul de la pozitia mij + 1 la dr al vectorului tata
         ///in acelasi vector tata, pe intervalul [st, dr]
-        void combine(int st, int mij, int dr) {
+        void combine(long long st, long long mij, long long dr) {
             ///voi crea doi vectori temporari (indexati de la 1)
-            int dimSt = mij - st + 1;
-            int dimDr = dr - (mij + 1) + 1;
+            long long dimSt = mij - st + 1;
+            long long dimDr = dr - (mij + 1) + 1;
             auto *stArr = new T[dimSt + 1];
             auto *drArr = new T[dimDr + 1];
 
-            for (int i = 1; i <= dimSt; i++) {
+            for (long long i = 1; i <= dimSt; i++) {
                 stArr[i] = v[st + i - 1];
             }
-            for (int i = 1; i <= dimDr; i++) {
+            for (long long i = 1; i <= dimDr; i++) {
                 drArr[i] = v[(mij + 1) + i - 1];
             }
 
-            int indexSt = 1;
-            int indexDr = 1;
-            int indexV = st;
+            long long indexSt = 1;
+            long long indexDr = 1;
+            long long indexV = st;
             while (indexSt <= dimSt && indexDr <= dimDr) {
                 if (stArr[indexSt] <= drArr[indexDr]) {
                     v[indexV] = stArr[indexSt];
@@ -51,11 +51,11 @@ namespace ds {
                 indexV++;
             }
 
-            for (int i = indexSt; i <= dimSt; i++) {
+            for (long long i = indexSt; i <= dimSt; i++) {
                 v[indexV] = stArr[i];
                 indexV++;
             }
-            for (int i = indexDr; i <= dimDr; i++) {
+            for (long long i = indexDr; i <= dimDr; i++) {
                 v[indexV] = drArr[i];
                 indexV++;
             }
@@ -64,71 +64,73 @@ namespace ds {
             delete[] drArr;
         }
 
-        void countSort(int exp, int base) {
-            int output[dim + 1];
-            int ct[base] = {0};
+        void countSort(long long exp, unsigned long long base) {
+            auto *output = new long long[dim + 1];
+            auto *ct = new long long[base + 1];
 
-            for (int i = 1; i <= dim; i++) {
-                int cifra = ((int) (v[i] / exp)) % base;
-                ct[cifra]++;
+            for (long long i = 0; i <= base; i++)
+                ct[i] = 0;
+
+            for (long long i = 1; i <= dim; i++) {
+                long long digit = ((long long) (v[i] / exp)) % base;
+                ct[digit]++;
             }
 
-            for (int i = 1; i <= base - 1; i++) {
-                ct[i] = ct[i] + ct[i - 1];
+            for (long long i = 1; i <= base - 1; i++)
+                ct[i] += ct[i - 1];
+
+            for (long long i = dim; i >= 1; i--) {
+                long long digit = ((long long) (v[i] / exp)) % base;
+                output[ct[digit]] = v[i];
+                ct[digit]--;
             }
 
-            for (int i = dim; i >= 1; i--) {
-                int cifra = ((int) (v[i] / exp)) % base;
-                output[ct[cifra]] = v[i];
-                ct[cifra]--;
-            }
-
-
-            for (int i = 1; i <= dim; i++) {
+            for (long long i = 1; i <= dim; i++)
                 v[i] = output[i];
-            }
 
+            delete[] ct;
+            delete[] output;
         }
 
-        void mergeSortUtil(int st, int dr) {
+        void mergeSortUtil(long long st, long long dr) {
             if (st >= dr) {
                 return;
             }
 
-            int mij = st + (dr - st) / 2;
+            long long mij = st + (dr - st) / 2;
             mergeSortUtil(st, mij);
             mergeSortUtil(mij + 1, dr);
             combine(st, mij, dr);
         }
 
-        void heapSortUtil(int st, int dr) {
-            int N = dr - st + 1;
+        void heapSortUtil(long long st, long long dr) {
+            long long N = dr - st + 1;
             priority_queue<T, vector<T>, greater<T>> X;
-            for (int i = st; i <= dr; i++) {
+            for (long long i = st; i <= dr; i++) {
                 X.push(v[i]);
             }
 
-            for (int i = st; i <= dr; i++) {
+            for (long long i = st; i <= dr; i++) {
                 v[i] = X.top();
                 X.pop();
             }
         }
 
-        void quickSortUtil(int st, int dr) {
+        void quickSortUtil(long long st, long long dr) {
             if (st >= dr) {
                 return;
             }
 
-            int pi = partition(st, dr);
+            long long pi = partition(st, dr);
 
             quickSortUtil(st, pi - 1);
             quickSortUtil(pi + 1, dr);
         }
 
-        void insertionSortUtil(int st, int dr) {
-            for (int i = st; i <= dr; i++) {
+        void insertionSortUtil(long long st, long long dr) {
+            for (long long i = st; i <= dr; i++) {
                 T temp = v[i];
-                int k = i - 1;
+                long long k = i - 1;
                 while (temp < v[k] && k >= st) {
                     v[k + 1] = v[k];
                     k--;
@@ -137,12 +139,12 @@ namespace ds {
             }
         }
 
-        void introSortUtil(int st, int dr, int depthLimit) {
+        void introSortUtil(long long st, long long dr, long long depthLimit) {
             if (st >= dr) {
                 return;
             }
 
-            int N = dr - st + 1;
+            long long N = dr - st + 1;
 
             if (N <= 16) {
                 insertionSortUtil(st, dr);
@@ -150,16 +152,16 @@ namespace ds {
             if (depthLimit == 0) {
                 heapSortUtil(st, dr);
             } else {
-                int pi = partition(st, dr);
+                long long pi = partition(st, dr);
                 introSortUtil(st, pi - 1, depthLimit - 1);
                 introSortUtil(pi + 1, dr, depthLimit - 1);
             }
         }
 
-        int partition(int st, int dr) {
+        long long partition(long long st, long long dr) {
             T pivot = v[dr];
-            int lastBun = st - 1;
-            for (int i = st; i <= dr; i++) {
+            long long lastBun = st - 1;
+            for (long long i = st; i <= dr; i++) {
                 if (v[i] < pivot) {
                     lastBun++;
                     swap(v[i], v[lastBun]);
@@ -172,24 +174,24 @@ namespace ds {
     public:
         Vector() { dim = 0; }
 
-        Vector(int x) {
+        Vector(long long x) {
             freeArray();
             dim = x;
             v = new T[dim + 1];
             v[0] = 0;
 
-            for (int i = 1; i <= dim; i++) {
+            for (long long i = 1; i <= dim; i++) {
                 v[i] = 0;
             }
         }
 
-        Vector(int N, T w[]) {
+        Vector(long long N, T w[]) {
             freeArray();
             dim = N;
             v = new T[dim + 1];
             v[0] = 0;
 
-            for (int i = 1; i <= dim; i++) {
+            for (long long i = 1; i <= dim; i++) {
                 v[i] = w[i];
             }
         }
@@ -198,13 +200,13 @@ namespace ds {
             freeArray();
         }
 
-        void update(int N, T w[]) {
+        void update(long long N, T w[]) {
             freeArray();
             dim = N;
             v = new T[dim + 1];
             v[0] = 0;
 
-            for (int i = 1; i <= N; i++) {
+            for (long long i = 1; i <= N; i++) {
                 v[i] = w[i];
             }
         }
@@ -214,20 +216,18 @@ namespace ds {
             X.v = new T[X.dim + 1];
             X.v[0] = 0;
 
-
-            for (int i = 1; i <= X.dim; i++) {
+            for (long long i = 1; i <= X.dim; i++)
                 in >> X.v[i];
-            }
 
             return in;
         }
 
         friend ostream &operator<<(ostream &out, Vector const &X) {
-            out << "Vectorul are " << X.dim << " elemente:" << "\n";
-            for (int i = 1; i <= X.dim; i++) {
-                out << X.v[i] << " ";
+            for (long long i = 1; i <= X.dim; i++) {
+                out << X.v[i];
+                if (i != X.dim)
+                    out << ",";
             }
-            out << "\n";
             return out;
         }
 
@@ -236,7 +236,7 @@ namespace ds {
             dim = X.dim;
             v = new T[dim + 1];
             v[0] = 0;
-            for (int i = 1; i <= dim; i++) {
+            for (long long i = 1; i <= dim; i++) {
                 v[i] = X.v[i];
             }
             return *this;
@@ -244,32 +244,32 @@ namespace ds {
 
         T getMax() {
             T mx = v[dim];
-            for (int i = 1; i <= dim; i++) {
-                if (v[i] > mx) {
+            for (long long i = 1; i <= dim; i++)
+                if (v[i] > mx)
                     mx = v[i];
-                }
-            }
+
             return mx;
         }
 
-        void radixSort(int base) {
-            ///doar daca T = positive int!
+        T getItemAtIndex(unsigned long long index) {
+            if (index >= dim)
+                throw (runtime_error("Index is larger than array size."));
+            return v[index];
+        }
+
+        void radixSort(unsigned long long base) {
+            ///doar daca T = positive long long!
             ///altfel nu am cum
-            if (!(std::is_same<T, int>::value)) {
-                //throw (runtime_error("You may only perform radix sort on natural numbers."));
-                return;
-            }
+            if (!(std::is_same<T, long long>::value) || !(std::is_same<T, long long>::value))
+                throw (runtime_error("You may only perform radix sort on natural numbers."));
 
-            for(int i = 1; i <= dim; i++){
-                if(v[i] < 0){
-                    //throw (runtime_error("You may only perform radix sort on natural numbers."));
-                    return;
-                }
-            }
+            for (long long i = 1; i <= dim; i++)
+                if (v[i] < 0)
+                    v[i] = abs(v[i]); // temporary
 
-            int mx = getMax();
+            long long mx = getMax();
 
-            for (int exp = 1; mx / exp > 0; exp = exp * base)
+            for (long long exp = 1; mx / exp > 0; exp = exp * base)
                 countSort(exp, base);
         }
 
@@ -278,11 +278,11 @@ namespace ds {
         }
 
         void shellSort() {
-            for (int gap = dim / 2; gap >= 1; gap = gap / 2) {
-                for (int i = gap + 1; i <= dim; i++) {
+            for (long long gap = dim / 2; gap >= 1; gap = gap / 2) {
+                for (long long i = gap + 1; i <= dim; i++) {
                     T temp = v[i];
 
-                    int j;
+                    long long j;
                     for (j = i; j - gap >= 1 && v[j - gap] > temp; j = j - gap) {
                         v[j] = v[j - gap];
                     }
@@ -304,7 +304,7 @@ namespace ds {
         }
 
         void introSort() {
-            int depthLimit = 2 * floor(log(dim));
+            long long depthLimit = 2 * floor(log(dim));
             introSortUtil(1, dim, depthLimit);
         }
 

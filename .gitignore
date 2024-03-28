@@ -35,6 +35,4 @@
 */.DS_Store
 
 # Sort project
-src/projects/sort/tests/*
-src/projects/sort/reports/*
-src/projects/sort/build/*
+cmake-build-debug
