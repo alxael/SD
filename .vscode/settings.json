@@ -4,7 +4,9 @@
         "ios": "cpp",
         "__node_handle": "cpp",
         "iosfwd": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "string": "cpp"
     },
-    "cmake.sourceDirectory": "/Users/Work/Documents/dev/SD/src/projects/heap"
+    "cmake.sourceDirectory": "/Users/Work/Documents/dev/SD/src/projects/heap",
+    "cmake.configureOnOpen": false
 }

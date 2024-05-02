@@ -11,6 +11,7 @@ int main()
 {
     ifstream in("tests/1.txt");
     LeftistNode<int>::LeftistHeap leftistHeap;
+    PairingNode<int>::PairingHeap pairingHeap;
     int value, numberOfValues;
 
     in >> numberOfValues;
@@ -18,13 +19,15 @@ int main()
     {
         in >> value;
         leftistHeap.push(value);
+        pairingHeap.push(value);
     }
-    cout << leftistHeap;
 
-    while (!leftistHeap.empty())
-    {
-        cout << leftistHeap.top() << endl;
-        leftistHeap.pop();
-    }
+    cout << leftistHeap;
+    cout << endl;
+    cout << pairingHeap << endl;
+
+    // cout << pairingHeap.top() << endl;
+    // pairingHeap.pop();
+    // cout << pairingHeap << endl;
     return 0;
 }
