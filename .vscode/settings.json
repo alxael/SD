@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "ios": "cpp",
+        "__node_handle": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp"
+    },
+    "cmake.sourceDirectory": "/Users/Work/Documents/dev/SD/src/projects/heap"
+}

@@ -32,9 +32,9 @@
 *.app
 
 # Miscellaneous
-*/.DS_Store
+.DS_Store
 
 # Sort project
-cmake-build-debug
+build
 tests
 reports
