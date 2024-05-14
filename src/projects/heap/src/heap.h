@@ -1,3 +1,4 @@
+#include <limits>
 #include <iostream>
 
 using namespace std;
@@ -15,16 +16,6 @@ namespace heap
     public:
         LeftistNode(KeyType key, int distance = 0, LeftistNode *left = nullptr, LeftistNode *right = nullptr) : key(key), distance(distance), left(left), right(right) {}
 
-        friend ostream &operator<<(ostream &out, LeftistNode &node)
-        {
-            out << node.key << " " << node.distance;
-            if (node.left != nullptr || node.right != nullptr)
-                out << " -> " << (node.left != nullptr ? to_string(node.left->key) : "|")
-                    << " " << (node.right != nullptr ? to_string(node.right->key) : "|");
-            out << endl;
-            return out;
-        }
-
         KeyType getKey() { return key; }
         void setKey(KeyType key) { key = key; }
 
@@ -37,88 +28,92 @@ namespace heap
         LeftistNode *getRight() { return right; }
         void setRight(LeftistNode *right) { right = right; }
 
-        class LeftistHeap
+        template <typename ValueType>
+        friend class LeftistHeap;
+    };
+
+    template <typename KeyType>
+    class LeftistHeap
+    {
+    private:
+        LeftistNode<KeyType> *root;
+
+        LeftistNode<KeyType> *mergeHeap(LeftistNode<KeyType> *a, LeftistNode<KeyType> *b)
         {
-        private:
-            LeftistNode *root;
-
-            LeftistNode *mergeHeap(LeftistNode *a, LeftistNode *b)
-            {
-                if (a == nullptr)
-                    return b;
-                if (b == nullptr)
-                    return a;
-                if (a->key < b->key)
-                    swap(a, b);
-                if (a->left == nullptr)
-                    a->left = b;
-                else
-                {
-                    a->right = mergeHeap(a->right, b);
-                    if (a->right->distance > a->left->distance)
-                        swap(a->left, a->right);
-                    a->distance = 1 + a->right->distance;
-                }
+            if (a == nullptr)
+                return b;
+            if (b == nullptr)
                 return a;
-            }
-            void freeMemory(LeftistNode *node)
+            if (a->key < b->key)
+                swap(a, b);
+            if (a->left == nullptr)
+                a->left = b;
+            else
             {
-                if (node != nullptr)
-                {
-                    freeMemory(node->left);
-                    freeMemory(node->right);
-                    delete node;
-                }
+                a->right = mergeHeap(a->right, b);
+                if (a->right->distance > a->left->distance)
+                    swap(a->left, a->right);
+                a->distance = 1 + a->right->distance;
             }
-            void print(ostream &out, LeftistNode *node)
+            return a;
+        }
+        void freeMemory(LeftistNode<KeyType> *node)
+        {
+            if (node != nullptr)
             {
-                out << *node;
-                if (node->left != nullptr)
-                    print(out, node->left);
-                if (node->right != nullptr)
-                    print(out, node->right);
+                freeMemory(node->left);
+                freeMemory(node->right);
+                delete node;
             }
+        }
+        void print(ostream &out, LeftistNode<KeyType> *node)
+        {
+            out << *node;
+            if (node->left != nullptr)
+                print(out, node->left);
+            if (node->right != nullptr)
+                print(out, node->right);
+        }
 
-        public:
-            LeftistHeap() { root = nullptr; }
-            LeftistHeap(KeyType key, int distance = 0) : root(new LeftistNode(key, distance)) {}
-            LeftistHeap(LeftistNode *root) : root(root) {}
-            ~LeftistHeap()
-            {
-                freeMemory(root);
-                root = nullptr;
-            }
+    public:
+        LeftistHeap() { root = nullptr; }
+        LeftistHeap(KeyType key, int distance = 0) : root(new LeftistNode<KeyType>(key, distance)) {}
+        LeftistHeap(LeftistNode<KeyType> *root) : root(root) {}
+        ~LeftistHeap()
+        {
+            freeMemory(root);
+            root = nullptr;
+        }
 
-            friend ostream &operator<<(ostream &out, LeftistHeap &heap)
-            {
-                heap.print(out, heap.root);
-                return out;
-            }
+        friend ostream &operator<<(ostream &out, LeftistNode<KeyType> &heap)
+        {
+            heap.print(out, heap.root);
+            return out;
+        }
 
-            KeyType top()
-            {
-                if (root == nullptr)
-                    throw(runtime_error("Can't get maximum! Heap is empty!"));
-                return root->key;
-            }
-            void push(KeyType key) { root = mergeHeap(root, new LeftistNode(key)); }
-            void pop()
-            {
-                if (this->empty())
-                    throw(runtime_error("Can't pop! Heap is empty!"));
-                LeftistNode *tmp = root;
-                root = mergeHeap(root->left, root->right);
-                delete tmp;
-            }
-            bool empty() { return (root == nullptr); }
-            void modifyKey(LeftistNode *modifiedNode, KeyType newKey)
-            {
-                LeftistNode *tmp = modifiedNode;
-                modifiedNode = mergeHeap(modifiedNode->left, modifiedNode->right);
-                delete tmp;
-                push(newKey);
-            }
-        };
+        KeyType top()
+        {
+            if (root == nullptr)
+                throw(runtime_error("Can't get maximum! Heap is empty!"));
+            return root->key;
+        }
+        void push(KeyType key) { root = mergeHeap(root, new LeftistNode<KeyType>(key)); }
+        void pop()
+        {
+            if (this->empty())
+                throw(runtime_error("Can't pop! Heap is empty!"));
+            LeftistNode<KeyType> *tmp = root;
+            root = mergeHeap(root->left, root->right);
+            delete tmp;
+        }
+        bool empty() { return (root == nullptr); }
+        void modifyKey(LeftistNode<KeyType> *modifiedNode, KeyType newKey)
+        {
+            LeftistNode<KeyType> *tmp = modifiedNode;
+            modifiedNode = mergeHeap(modifiedNode->left, modifiedNode->right);
+            delete tmp;
+            push(newKey);
+        }
     };
 
     template <typename KeyType>
@@ -150,165 +145,187 @@ namespace heap
         PairingNode *getSibling() { return sibling; }
         void setSibling(PairingNode *sibling) { sibling = sibling; }
 
-        class PairingHeap
+        template <typename ValueType>
+        friend class PairingHeap;
+    };
+
+    template <typename KeyType>
+    class PairingHeap
+    {
+    private:
+        PairingNode<KeyType> *root;
+
+        PairingNode<KeyType> *mergeHeap(PairingNode<KeyType> *a, PairingNode<KeyType> *b)
         {
-        private:
-            PairingNode *root;
-
-            PairingNode *mergeHeap(PairingNode *a, PairingNode *b)
-            {
-                if (a == nullptr)
-                    return b;
-                if (b == nullptr)
-                    return a;
-                if (a->key < b->key)
-                    swap(a, b);
-                if (a->child != nullptr)
-                    b->sibling = a->child;
-                a->child = b;
+            if (a == nullptr)
+                return b;
+            if (b == nullptr)
                 return a;
-            }
-            PairingNode *twoPassMerge(PairingNode *node)
+            if (a->key < b->key)
+                swap(a, b);
+            if (a->child != nullptr)
+                b->sibling = a->child;
+            a->child = b;
+            return a;
+        }
+        PairingNode<KeyType> *twoPassMerge(PairingNode<KeyType> *node)
+        {
+            if (node == nullptr || node->sibling == nullptr)
+                return node;
+            PairingNode<KeyType> *nodeOne = node;
+            PairingNode<KeyType> *nodeTwo = node->sibling;
+            PairingNode<KeyType> *nextNode = node->sibling->sibling;
+            nodeOne->sibling = nodeTwo->sibling = nullptr;
+            return mergeHeap(mergeHeap(nodeOne, nodeTwo), twoPassMerge(nextNode));
+        }
+        void freeMemory(PairingNode<KeyType> *node)
+        {
+            if (node != nullptr)
             {
-                if (node == nullptr || node->sibling == nullptr)
-                    return node;
-                PairingNode *nodeOne = node;
-                PairingNode *nodeTwo = node->sibling;
-                PairingNode *nextNode = node->sibling->sibling;
-                nodeOne->sibling = nodeTwo->sibling = nullptr;
-                return mergeHeap(mergeHeap(nodeOne, nodeTwo), twoPassMerge(nextNode));
+                freeMemory(node->child);
+                freeMemory(node->sibling);
+                delete node;
             }
-            void freeMemory(PairingNode *node)
-            {
-                if (node != nullptr)
-                {
-                    freeMemory(node->child);
-                    freeMemory(node->sibling);
-                    delete node;
-                }
-            }
-            void print(ostream &out, PairingNode *node)
-            {
-                out << *node;
-                if (node->child != nullptr)
-                    print(out, node->child);
-                if (node->sibling != nullptr)
-                    print(out, node->sibling);
-            }
+        }
+        void print(ostream &out, PairingNode<KeyType> *node)
+        {
+            out << *node;
+            if (node->child != nullptr)
+                print(out, node->child);
+            if (node->sibling != nullptr)
+                print(out, node->sibling);
+        }
 
-        public:
-            PairingHeap() : root(nullptr) {}
-            PairingHeap(KeyType key) : root(new PairingNode(key)) {}
-            PairingHeap(PairingNode *root) : root(root) {}
-            ~PairingHeap()
-            {
-                freeMemory(root);
-                root = nullptr;
-            }
+    public:
+        PairingHeap() : root(nullptr) {}
+        PairingHeap(KeyType key) : root(new PairingNode<KeyType>(key)) {}
+        PairingHeap(PairingNode<KeyType> *root) : root(root) {}
+        ~PairingHeap()
+        {
+            freeMemory(root);
+            root = nullptr;
+        }
 
-            friend ostream &operator<<(ostream &out, PairingHeap &heap)
-            {
-                heap.print(out, heap.root);
-                return out;
-            }
+        friend ostream &operator<<(ostream &out, PairingHeap &heap)
+        {
+            heap.print(out, heap.root);
+            return out;
+        }
 
-            KeyType top()
+        KeyType top()
+        {
+            if (root == nullptr)
+                throw(runtime_error("Can't get maximum! Heap is empty!"));
+            return root->key;
+        }
+        void push(KeyType key) { root = mergeHeap(root, new PairingNode<KeyType>(key)); }
+        void pop()
+        {
+            if (this->empty())
+                throw(runtime_error("Can't pop! Heap is empty!"));
+            PairingNode<KeyType> *tmp = root;
+            root = twoPassMerge(root->child);
+            delete tmp;
+        }
+        bool empty() { return (root == nullptr); }
+        void modifyKey(PairingNode<KeyType> *modifiedNode, KeyType newKey)
+        {
+            if (modifiedNode->child != nullptr)
             {
-                if (root == nullptr)
-                    throw(runtime_error("Can't get maximum! Heap is empty!"));
-                return root->key;
-            }
-            void push(KeyType key) { root = mergeHeap(root, new PairingNode(key)); }
-            void pop()
-            {
-                if (this->empty())
-                    throw(runtime_error("Can't pop! Heap is empty!"));
-                PairingNode *tmp = root;
-                root = twoPassMerge(root->child);
+                PairingNode<KeyType> *tmp = modifiedNode;
+                modifiedNode = twoPassMerge(modifiedNode->child);
                 delete tmp;
             }
-            bool empty() { return (root == nullptr); }
-            void modifyKey(PairingNode<KeyType> *modifiedNode, KeyType newKey)
+            else
             {
-                if (modifiedNode->child != nullptr)
-                {
-                    PairingNode *tmp = modifiedNode;
-                    modifiedNode = twoPassMerge(modifiedNode->child);
-                    delete tmp;
-                }
-                else
-                {
-                    if (modifiedNode->leftSibling != nullptr)
-                        modifiedNode->leftSibling->rightSibling = modifiedNode->rightSibling;
-                    if (modifiedNode->rightSibling != nullptr)
-                        modifiedNode->rightSibling->leftSibling = modifiedNode->leftSibling;
+                if (modifiedNode->leftSibling != nullptr)
+                    modifiedNode->leftSibling->rightSibling = modifiedNode->rightSibling;
+                if (modifiedNode->rightSibling != nullptr)
+                    modifiedNode->rightSibling->leftSibling = modifiedNode->leftSibling;
 
-                    delete modifiedNode;
-                    modifiedNode = nullptr;
-                }
-                push(newKey);
+                delete modifiedNode;
+                modifiedNode = nullptr;
             }
-        };
+            push(newKey);
+        }
     };
 
-    template <class V>
-    class FibonacciHeap;
 
-    const double INF_fibonacci_heap = 2000000001;
-
-    template <class V>
-    struct node
+    template <class KeyType>
+    class FibonacciNode
     {
-        node<V> *left;
-        node<V> *right;
-        node<V> *child;
-        node<V> *parent;
-        V val;
+    private:
+        FibonacciNode<KeyType> *left;
+        FibonacciNode<KeyType> *right;
+        FibonacciNode<KeyType> *child;
+        FibonacciNode<KeyType> *parent;
+        KeyType val;
         bool marked;
         int degree;
+
+    public:
+        FibonacciNode(KeyType value)
+        {
+            left = this;
+            right = this;
+            child = nullptr;
+            parent = nullptr;
+            degree = 0;
+            val = value;
+            marked = false;
+        }
+
+        template <typename ValueType>
+        friend class FibonacciHeap;
+
+        ~FibonacciNode() = default;
     };
 
-    template <class V>
+    template <typename KeyType>
     class FibonacciHeap
     {
     private:
-        node<V> *maxNode;
-        node<V> *rootList;
+        FibonacciNode<KeyType> *maxNode;
+        FibonacciNode<KeyType> *rootList;
 
-        node<V> *constructNode(V value)
+        void mergeWithRoot(FibonacciNode<KeyType> *mergedNode)
         {
-            auto *newNode = new node<V>;
-            newNode->left = newNode;
-            newNode->right = newNode;
-            newNode->child = nullptr;
-            newNode->parent = nullptr;
-            newNode->degree = 0;
-            newNode->val = value;
-            newNode->marked = false;
-            return newNode;
-        }
-        void mergeWithRoot(node<V> *mergedNode)
-        {
-            if (rootList == nullptr)
-                rootList = mergedNode;
-            else
+            mergedNode->parent = nullptr;
+            if (rootList != nullptr)
             {
                 mergedNode->right = rootList;
                 mergedNode->left = rootList->left;
                 rootList->left->right = mergedNode;
                 rootList->left = mergedNode;
             }
+            else
+            {
+                mergedNode->right = mergedNode;
+                mergedNode->left = mergedNode;
+                rootList = mergedNode;
+            }
         }
 
-        void removeFromRoot(node<V> *removedNode)
+        void removeFromRoot(FibonacciNode<KeyType> *removedNode)
         {
             if (removedNode == rootList)
                 rootList = removedNode->right;
-            removedNode->left->right = removedNode->right;
-            removedNode->right->left = removedNode->left;
+            if (removedNode->right != removedNode)
+            {
+                removedNode->left->right = removedNode->right;
+                removedNode->right->left = removedNode->left;
+            }
+            if (removedNode->parent != nullptr)
+            {
+                if (removedNode->parent->degree == 1)
+                    removedNode->parent->child = nullptr;
+                else
+                    removedNode->parent->child = removedNode->right;
+                removedNode->parent->degree--;
+            }
         }
 
-        void removeFromChildren(node<V> *removedChild, node<V> *parent)
+        void removeFromChildren(FibonacciNode<KeyType> *removedChild, FibonacciNode<KeyType> *parent)
         {
             if (parent->child == parent->child->right)
                 parent->child = nullptr;
@@ -321,28 +338,33 @@ namespace heap
             removedChild->right->left = removedChild->left;
         }
 
-        void mergeWithChild(node<V> *newChild, node<V> *parent)
+        void mergeWithChild(FibonacciNode<KeyType> *newChild, FibonacciNode<KeyType> *parent)
         {
-
-            if (parent->child == nullptr)
+            if (parent->degree == 0)
+            {
                 parent->child = newChild;
+                newChild->right = newChild;
+                newChild->left = newChild;
+                newChild->parent = parent;
+            }
             else
             {
-                // Inserez mereu la dreapta primului copil
-                newChild->right = parent->child->right;
-                newChild->left = parent->child;
-                parent->child->right->left = newChild;
-                parent->child->right = newChild;
+                FibonacciNode<KeyType> *firstChild = parent->child;
+                FibonacciNode<KeyType> *firstChildsLeft = firstChild->left;
+                firstChild->left = newChild;
+                newChild->right = firstChild;
+                newChild->left = firstChildsLeft;
+                firstChildsLeft->right = newChild;
             }
+            newChild->parent = parent;
+            parent->degree++;
         }
 
-        void heapLink(node<V> *child, node<V> *parent)
+        void heapLink(FibonacciNode<KeyType> *child, FibonacciNode<KeyType> *parent)
         {
             removeFromRoot(child);
-            child->left = child->right = child;
-            parent->degree++;
             mergeWithChild(child, parent);
-            child->parent = parent;
+            child->marked = false;
         }
 
         void cleanUp()
@@ -350,10 +372,10 @@ namespace heap
             // magic number 128 = 64 bits x 2
             // 64 seems to be working just fine tho
             // increase to 128 for bigger values?
-            std::vector<node<V> *> degreeTable = {64, nullptr};
-            std::vector<node<V> *> rootNodes = {rootList};
+            vector<FibonacciNode<KeyType> *> degreeTable = {64, nullptr};
+            vector<FibonacciNode<KeyType> *> rootNodes = {rootList};
 
-            node<V> *p = rootList->right;
+            FibonacciNode<KeyType> *p = rootList->right;
             while (p != rootList)
             {
                 rootNodes.push_back(p);
@@ -365,7 +387,7 @@ namespace heap
                 int deg = rootNode->degree;
                 while (degreeTable[deg] != nullptr)
                 {
-                    node<V> *degNode = degreeTable[deg];
+                    FibonacciNode<KeyType> *degNode = degreeTable[deg];
                     if (rootNode->val < degNode->val)
                         std::swap(rootNode, degNode);
                     heapLink(degNode, rootNode);
@@ -374,25 +396,25 @@ namespace heap
                 }
                 degreeTable[deg] = rootNode;
             }
-            for (int i = 0; i < 64; i++)
-                if (degreeTable[i] != nullptr)
-                    if (degreeTable[i]->val > maxNode->val)
-                        maxNode = degreeTable[i];
+            for (int index = 0; index < 64; index++)
+                if (degreeTable[index] != nullptr)
+                    if (degreeTable[index]->val > maxNode->val)
+                        maxNode = degreeTable[index];
         }
 
-        void cut(node<V> *removedChild, node<V> *parent)
+        void cut(FibonacciNode<KeyType> *removedChild, FibonacciNode<KeyType> *parent)
         {
             removeFromChildren(removedChild, parent);
             parent->degree -= 1;
             mergeWithRoot(removedChild);
-            removedChild->parent = NULL;
+            removedChild->parent = nullptr;
             removedChild->marked = false;
         }
 
-        void cascadingCut(node<V> *currentNode)
+        void cascadingCut(FibonacciNode<KeyType> *currentNode)
         {
-            node<V> *currentParent = currentNode->parent;
-            if (currentParent != NULL)
+            FibonacciNode<KeyType> *currentParent = currentNode->parent;
+            if (currentParent != nullptr)
             {
                 if (!currentNode->marked)
                     currentNode->marked = true;
@@ -403,14 +425,15 @@ namespace heap
                 }
             }
         }
-        void freeMemory(node<V> *x)
+
+        void freeMemory(FibonacciNode<KeyType> *x)
         {
             if (x != nullptr)
             {
-                node<V> *t1 = x;
+                FibonacciNode<KeyType> *t1 = x;
                 do
                 {
-                    node<V> *t2 = t1;
+                    FibonacciNode<KeyType> *t2 = t1;
                     t1 = t1->right;
                     freeMemory(t2->child);
                     delete t2;
@@ -424,6 +447,7 @@ namespace heap
             maxNode = nullptr;
             rootList = nullptr;
         }
+
         ~FibonacciHeap()
         {
             freeMemory(rootList);
@@ -431,17 +455,15 @@ namespace heap
             maxNode = nullptr;
         }
 
-        void insert(V insertedValue)
+        void push(KeyType insertedValue)
         {
-            node<V> *insertedNode = constructNode(insertedValue);
-
+            FibonacciNode<KeyType> *insertedNode = new FibonacciNode<KeyType>(insertedValue);
             mergeWithRoot(insertedNode);
-
             if (maxNode == nullptr || maxNode->val < insertedValue)
                 maxNode = insertedNode;
         }
 
-        void merge(FibonacciHeap<V> *other)
+        void merge(FibonacciHeap<KeyType> *other)
         {
 
             if (rootList == nullptr)
@@ -452,11 +474,11 @@ namespace heap
             else if (other->rootList != nullptr)
             {
 
-                node<V> *last = other->rootList->left;   // ultimul nod dupa merge
-                other->rootList->left = rootList->left;  // rootList->left = ultimul din primul heap
-                rootList->left->right = other->rootList; // ult din primul heap ->left = other.rootList
-                rootList->left = last;                   // rootList->left = ultimul nod dupa merge
-                rootList->left->right = rootList;        // ultimul nod dupam merge ->right = rootList
+                FibonacciNode<KeyType> *last = other->rootList->left; // ultimul nod dupa merge
+                other->rootList->left = rootList->left;               // rootList->left = ultimul din primul heap
+                rootList->left->right = other->rootList;              // ult din primul heap ->left = other.rootList
+                rootList->left = last;                                // rootList->left = ultimul nod dupa merge
+                rootList->left->right = rootList;                     // ultimul nod dupam merge ->right = rootList
 
                 // maxNode = max(minNode, other.minNode)
                 if (maxNode->val < other->maxNode->val)
@@ -464,44 +486,31 @@ namespace heap
             }
         }
 
-        V getMaximum()
+        KeyType top()
         {
             if (maxNode == nullptr)
                 throw(runtime_error("Can't get maximum! Heap is empty!"));
             return maxNode->val;
         };
 
-        V extractMax()
+        KeyType pop()
         {
-            node<V> *z = maxNode;
+            FibonacciNode<KeyType> *z = maxNode;
             if (z != nullptr)
             {
-                V maxVal = 0;
+                KeyType maxVal;
                 if (z->child != nullptr)
                 {
-                    node<V> *p = rootList->right;
 
-                    // AICI PT UN CAZ AM Z->DEGREE MAI MARE CU 1 DECAT AR TREBUI SA FIE
-                    // NU-MI DAU SEAMA DE CE
-                    std::vector<node<V> *> children = {};
-                    node<V> *currentChild = z->child;
+                    FibonacciNode<KeyType> *currentChild = z->child;
                     do
                     {
                         auto temp = currentChild;
-                        // std::cout << currentChild->val << "-> child. \n";
-                        children.push_back(temp);
                         currentChild = currentChild->right;
+                        mergeWithRoot(temp);
                     } while (currentChild != z->child);
-
-                    for (auto child : children)
-                    {
-                        mergeWithRoot(child);
-                        child->parent = nullptr;
-                    }
                 }
-
                 removeFromRoot(z);
-
                 if (z == z->right)
                 {
                     // Am extras dintr-un heap cu un singur element (care era si minim)
@@ -516,19 +525,18 @@ namespace heap
 
                 maxVal = z->val;
                 delete z;
-
                 return maxVal;
             }
             else
                 throw(runtime_error("Can't pop! Heap is empty!"));
         }
 
-        void increaseValue(node<V> *incNode, V incValue)
+        void increaseValue(FibonacciNode<KeyType> *incNode, KeyType incValue)
         {
             if (incValue < incNode->val)
                 return;
             incNode->val = incValue;
-            node<V> *parentNode = incNode->parent;
+            FibonacciNode<KeyType> *parentNode = incNode->parent;
             if (parentNode != NULL && incNode->val > parentNode->val)
             {
                 cut(incNode, parentNode);
@@ -538,10 +546,10 @@ namespace heap
                 maxNode = incNode;
         }
 
-        node<V> *deleteNode(node<V> *delNode)
+        FibonacciNode<KeyType> *deleteNode(FibonacciNode<KeyType> *delNode)
         {
-            decreaseValue(delNode, INF_fibonacci_heap);
-            return extractMax();
+            decreaseValue(delNode, numeric_limits<KeyType>::max());
+            return pop();
         }
     };
 };

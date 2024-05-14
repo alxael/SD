@@ -28,7 +28,7 @@ namespace tester
         push,
         pop,
         merge,
-        getMin,
+        getMax,
         decKey,
     };
 
@@ -118,7 +118,7 @@ namespace tester
         string testDirectoryPath;
         string reportDirectoryPath;
 
-        const map<OperationType, string> operationTypeDisplay{{push, "Push"}, {pop, "Pop"}, {getMin, "Get minimum"}, {decKey, "Decrease key"}};
+        const map<OperationType, string> operationTypeDisplay{{push, "Push"}, {pop, "Pop"}, {getMax, "Get maximum"}, {decKey, "Decrease key"}};
         static const long long heapImplementationsCount = 4;
 
         vector<pair<OperationType, ValueType>> generateDataSingle()
@@ -128,12 +128,12 @@ namespace tester
             {
                 double operationValue = operationDistribution.generateValue();
                 OperationType type;
-                if (operationValue > 0 && operationValue < 1)
+                if (operationValue < 1)
                     result.emplace_back(pair<OperationType, ValueType>(pop, 0));
                 if (operationValue > 1 && operationValue < 2)
                     result.emplace_back(pair<OperationType, ValueType>(push, valueDistribution.generateValue()));
-                if (operationValue > 2 && operationValue < 3)
-                    result.emplace_back(pair<OperationType, ValueType>(getMin, 0));
+                if (operationValue > 2)
+                    result.emplace_back(pair<OperationType, ValueType>(getMax, 0));
             }
             return result;
         }
@@ -234,7 +234,7 @@ namespace tester
                             else
                                 results[1].emplace_back("Pop failed");
                         }
-                        if (it->first == getMin)
+                        if (it->first == getMax)
                         {
                             if (!heap.empty())
                             {
@@ -242,7 +242,7 @@ namespace tester
                                 results[1].emplace_back(to_string(top));
                             }
                             else
-                                results[1].emplace_back("Get minimum failed");
+                                results[1].emplace_back("Get maximum failed");
                         }
                     }
                     endTime = high_resolution_clock::now();
@@ -258,7 +258,8 @@ namespace tester
                 // 2. Leftist Heap
                 try
                 {
-                    LeftistNode<long long>::LeftistHeap heap;
+                    LeftistHeap<ValueType> heap;
+
                     startTime = high_resolution_clock::now();
                     for (auto it = data.begin(); it != data.end(); it++)
                     {
@@ -286,7 +287,7 @@ namespace tester
                                 results[2].emplace_back("Pop failed");
                             }
                         }
-                        if (it->first == getMin)
+                        if (it->first == getMax)
                         {
                             try
                             {
@@ -295,7 +296,7 @@ namespace tester
                             }
                             catch (...)
                             {
-                                results[2].emplace_back("Get minimum failed");
+                                results[2].emplace_back("Get maximum failed");
                             }
                         }
                     }
@@ -312,7 +313,7 @@ namespace tester
                 // 3. Pairing Heap
                 try
                 {
-                    PairingNode<long long>::PairingHeap heap;
+                    PairingHeap<ValueType> heap;
                     startTime = high_resolution_clock::now();
                     for (auto it = data.begin(); it != data.end(); it++)
                     {
@@ -340,7 +341,7 @@ namespace tester
                                 results[3].emplace_back("Pop failed");
                             }
                         }
-                        if (it->first == getMin)
+                        if (it->first == getMax)
                         {
                             try
                             {
@@ -349,7 +350,7 @@ namespace tester
                             }
                             catch (...)
                             {
-                                results[3].emplace_back("Get minimum failed");
+                                results[3].emplace_back("Get maximum failed");
                             }
                         }
                     }
@@ -366,7 +367,7 @@ namespace tester
                 // 4. Fibonacci Heap
                 try
                 {
-                    FibonacciHeap<long long> heap;
+                    FibonacciHeap<ValueType> heap;
                     startTime = high_resolution_clock::now();
                     for (auto it = data.begin(); it != data.end(); it++)
                     {
@@ -374,7 +375,7 @@ namespace tester
                         {
                             try
                             {
-                                heap.insert(it->second);
+                                heap.push(it->second);
                                 results[4].emplace_back("Push succeded");
                             }
                             catch (...)
@@ -386,7 +387,7 @@ namespace tester
                         {
                             try
                             {
-                                auto top = heap.extractMax();
+                                ValueType top = heap.pop();
                                 results[4].emplace_back("Pop succeded");
                             }
                             catch (...)
@@ -394,16 +395,16 @@ namespace tester
                                 results[4].emplace_back("Pop failed");
                             }
                         }
-                        if (it->first == getMin)
+                        if (it->first == getMax)
                         {
                             try
                             {
-                                ValueType top = heap.getMaximum();
+                                ValueType top = heap.top();
                                 results[4].emplace_back(to_string(top));
                             }
                             catch (...)
                             {
-                                results[4].emplace_back("Get minimum failed");
+                                results[4].emplace_back("Get maximum failed");
                             }
                         }
                     }
