@@ -114,6 +114,11 @@ namespace heap
             delete tmp;
             push(newKey);
         }
+        void merge(LeftistHeap<KeyType> &other)
+        {
+            root = mergeHeap(root, other.root);
+            other.root = NULL;
+        }
     };
 
     template <typename KeyType>
@@ -248,8 +253,24 @@ namespace heap
             }
             push(newKey);
         }
-    };
+        void merge(PairingHeap<KeyType> &other)
+        {
+            if (root == NULL)
+            {
+                root = other.root;
+                return;
+            }
+            if (other.root == NULL)
+                return;
 
+            if (root->key < other.root->key)
+                swap(root, other.root);
+
+            other.root->sibling = root->child;
+            root->child = other.root;
+            other.root = NULL;
+        }
+    };
 
     template <class KeyType>
     class FibonacciNode
@@ -454,6 +475,8 @@ namespace heap
             rootList = nullptr;
             maxNode = nullptr;
         }
+
+        bool empty() { return (maxNode != nullptr); }
 
         void push(KeyType insertedValue)
         {

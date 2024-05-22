@@ -10,23 +10,10 @@ using namespace tester;
 
 int main()
 {
-    ifstream in("./configs/testingSchema-single.csv");
-    try
-    {
-        system("mkdir ../reports");
-    }
-    catch (const exception &exception)
-    {
-        cout << exception.what() << endl;
-    }
-    try
-    {
-        system("mkdir ../tests");
-    }
-    catch (const exception &exception)
-    {
-        cout << exception.what() << endl;
-    }
+    ifstream in("./configs/testingSchema.csv");
+    vector<string> createDirectoriesCommands{"mkdir ./results", "mkdir ./results/reports", "mkdir ./results/tests", "mkdir ./results/reports/single", "mkdir ./results/reports/multiple", "mkdir ./results/tests/single", "mkdir ./results/tests/multiple"};
+    for (const auto &command : createDirectoriesCommands)
+        system(command.c_str());
 
     unsigned long long numThreads = thread::hardware_concurrency();
     cout << "Available number of threads: " << numThreads << endl;
@@ -74,30 +61,27 @@ int main()
             distributionType = uniform;
         getline(in, argumentOne, ',');
         argumentOneValue = stod(argumentOne);
-        getline(in, argumentTwo, '\n');
+        getline(in, argumentTwo, ',');
         argumentTwoValue = stod(argumentTwo);
 
-        string testsPath = "./tests/" + to_string(index);
-        try
-        {
-            system(("mkdir " + testsPath).c_str());
-        }
-        catch (const exception &exception)
-        {
-            cout << exception.what() << endl;
-        }
+        string heapCount;
+        long long heapCountInt;
+        getline(in, heapCount, '\n');
+        heapCountInt = stoll(heapCount);
 
         if (dataType == "int")
         {
             Distribution<long long> valueDistribution(distributionType, argumentOneValue, argumentTwoValue);
-            Tester<long long> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, testsPath, "./reports");
+            Tester<long long> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, "./results/tests", "./results/reports", heapCountInt);
             threads.emplace_back(&Tester<long long>::generateTestsSingle, batchTester);
+            threads.emplace_back(&Tester<long long>::generateTestsMultiple, batchTester);
         }
         else if (dataType == "double")
         {
             Distribution<double> valueDistribution(distributionType, argumentOneValue, argumentTwoValue);
-            Tester<double> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, testsPath, "./reports");
+            Tester<double> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, "./results/tests", "./results/reports", heapCountInt);
             threads.emplace_back(&Tester<double>::generateTestsSingle, batchTester);
+            threads.emplace_back(&Tester<double>::generateTestsMultiple, batchTester);
         }
     }
     for (auto &thread : threads)
