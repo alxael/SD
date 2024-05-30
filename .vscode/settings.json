@@ -62,7 +62,9 @@
         "variant": "cpp",
         "algorithm": "cpp",
         "iterator": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "execution": "cpp",
+        "__memory": "cpp"
     },
     "cmake.sourceDirectory": "/Users/Work/Documents/dev/SD/src/projects/heap",
     "cmake.configureOnOpen": false
