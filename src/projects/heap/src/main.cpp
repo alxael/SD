@@ -10,76 +10,82 @@ using namespace tester;
 
 int main()
 {
+    ifstream in("./configs/testingSchema.csv");
+    vector<string> createDirectoriesCommands{"mkdir ./results", "mkdir ./results/reports", "mkdir ./results/tests", "mkdir ./results/reports/single", "mkdir ./results/reports/multiple", "mkdir ./results/tests/single", "mkdir ./results/tests/multiple"};
+    for (const auto &command : createDirectoriesCommands)
+        system(command.c_str());
 
     unsigned long long numThreads = thread::hardware_concurrency();
-
-    ifstream in("../configs/testingSchema.csv");
     cout << "Available number of threads: " << numThreads << endl;
-    // cout << "Begin?" << endl;
+    system("pwd");
 
-    // string beg;
-    // getline(cin, beg);
+    cout << "Begin?" << endl;
+    string beg;
+    getline(cin, beg);
 
-    Distribution<long long> valueDistribution(uniform, 0, 1000);
-    Distribution<double> operationDistribution(uniform, 0, 3);
-    Tester<long long> tester(1, 100, 100, valueDistribution, operationDistribution, "./tests", "./reports");
+    vector<thread> threads;
+    for (long long index = 1; !in.eof(); index++)
+    {
+        string dataType;
+        getline(in, dataType, ',');
 
-    tester.generateTestsSingle();
+        string testCount;
+        getline(in, testCount, ',');
+        long long testCountInt = stoll(testCount);
 
-    // vector<thread> threads;
-    // for (long long index = 1; !in.eof(); index++)
-    // {
-    //     string dataType;
-    //     getline(in, dataType, ',');
+        string valueCount;
+        getline(in, valueCount, ',');
+        long long valueCountInt = stoll(valueCount);
 
-    //     string valueCount;
-    //     getline(in, valueCount, ',');
-    //     long long valueCountInt = stoi(valueCount);
+        string distribution, argumentOne, argumentTwo;
+        DistributionType distributionType;
+        double argumentOneValue, argumentTwoValue;
 
-    //     string testCount;
-    //     getline(in, testCount, ',');
-    //     long long testCountInt = stoi(testCount);
+        getline(in, distribution, ',');
 
-    //     string distribution;
-    //     getline(in, distribution, ',');
-    //     DistributionType distributionType;
-    //     if (distribution == "normal")
-    //         distributionType = normal;
-    //     else if (distribution == "uniform")
-    //         distributionType = uniform;
+        if (distribution == "normal")
+            distributionType = normal;
+        else if (distribution == "uniform")
+            distributionType = uniform;
+        getline(in, argumentOne, ',');
+        argumentOneValue = stod(argumentOne);
+        getline(in, argumentTwo, ',');
+        argumentTwoValue = stod(argumentTwo);
 
-    //     string argumentOne;
-    //     getline(in, argumentOne, ',');
-    //     double argumentOneValue = stod(argumentOne);
+        Distribution<double> operationDistribution(distributionType, argumentOneValue, argumentTwoValue);
 
-    //     string argumentTwo;
-    //     getline(in, argumentTwo);
-    //     double argumentTwoValue = stod(argumentTwo);
+        getline(in, distribution, ',');
+        if (distribution == "normal")
+            distributionType = normal;
+        else if (distribution == "uniform")
+            distributionType = uniform;
+        getline(in, argumentOne, ',');
+        argumentOneValue = stod(argumentOne);
+        getline(in, argumentTwo, ',');
+        argumentTwoValue = stod(argumentTwo);
 
-    //     string testsPath = "../tests/" + to_string(index);
-    //     //        try {
-    //     //            system(("mkdir " + testsPath).c_str());
-    //     //        } catch (const exception &exception) {
-    //     //            cout << exception.what() << endl;
-    //     //        }
+        string heapCount;
+        long long heapCountInt;
+        getline(in, heapCount, '\n');
+        heapCountInt = stoll(heapCount);
 
-    //     if (dataType == "int")
-    //     {
-    //         Tester<long long> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
-    //                                       argumentTwoValue,
-    //                                       testsPath, "../reports");
-    //         threads.emplace_back(&Tester<long long>::generateTests, batchTester);
-    //     }
-    //     else if (dataType == "double")
-    //     {
-    //         Tester<double> batchTester(index, testCountInt, valueCountInt, distributionType, argumentOneValue,
-    //                                    argumentTwoValue,
-    //                                    testsPath, "../reports");
-    //         threads.emplace_back(&Tester<double>::generateTests, batchTester);
-    //     }
-    // }
-    // for (auto &thread : threads)
-    //     if (thread.joinable())
-    //         thread.join();
+        if (dataType == "int")
+        {
+            Distribution<long long> valueDistribution(distributionType, argumentOneValue, argumentTwoValue);
+            Tester<long long> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, "./results/tests", "./results/reports", heapCountInt);
+            threads.emplace_back(&Tester<long long>::generateTestsSingle, batchTester);
+            threads.emplace_back(&Tester<long long>::generateTestsMultiple, batchTester);
+        }
+        else if (dataType == "double")
+        {
+            Distribution<double> valueDistribution(distributionType, argumentOneValue, argumentTwoValue);
+            Tester<double> batchTester(index, testCountInt, valueCountInt, valueDistribution, operationDistribution, "./results/tests", "./results/reports", heapCountInt);
+            threads.emplace_back(&Tester<double>::generateTestsSingle, batchTester);
+            threads.emplace_back(&Tester<double>::generateTestsMultiple, batchTester);
+        }
+    }
+    for (auto &thread : threads)
+        if (thread.joinable())
+            thread.join();
     return 0;
 }
