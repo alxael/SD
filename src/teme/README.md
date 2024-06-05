@@ -11,3 +11,5 @@
 9. [Kami](https://www.infoarena.ro/problema/kami) (Infoarena) - [evaluare sursa](https://www.infoarena.ro/job_detail/3233705)
 10. [Stramosi](https://www.infoarena.ro/problema/stramosi) (Infoarena) - [evaluare sursa](https://www.infoarena.ro/job_detail/3233729)
 11. [Consecutive1](https://www.pbinfo.ro/probleme/3860) (Pbinfo) - [evaluare sursa](https://www.pbinfo.ro/detalii-evaluare/51295784)
+12. [Goal statistics](https://kilonova.ro/problems/960) (Kilonova) - [evaluare_sursa](https://www.infoarena.ro/job_detail/3233921)
+13. [insert1insert2](https://kilonova.ro/problems/2410) (Kilonova) - [evaluare sursa](https://kilonova.ro/submissions/387555)
